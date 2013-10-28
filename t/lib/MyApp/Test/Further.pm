@@ -22,7 +22,7 @@ no strict 'refs';
 *{"main::$_"} = *$_ for grep { defined &{$_} } keys %MyApp::Test::Further::;
 use strict 'refs';
 
-my $auth_user = 0;
+my $auth_user;
 
 our $stash = {};
 
@@ -34,18 +34,18 @@ sub api_auth_as {
     $conf{user_id} ||= 1;
     $conf{roles}   ||= ['superadmin'];
 
-    unless ($auth_user) {
-        require Package::Stash;
-        require MyApp::TestOnly::Mock::AuthUser;
+    if ( !$auth_user ) {
+        use Package::Stash;
+        use MyApp::TestOnly::Mock::AuthUser;
 
-        my $stashc    = Package::Stash->new('Catalyst::Plugin::Authentication');
-        my $auth_user = MyApp::TestOnly::Mock::AuthUser->new;
+        my $stashc = Package::Stash->new('Catalyst::Plugin::Authentication');
+        $auth_user = MyApp::TestOnly::Mock::AuthUser->new;
 
         $stashc->add_symbol( '&user',  sub { return $auth_user } );
         $stashc->add_symbol( '&_user', sub { return $auth_user } );
     }
 
-    $MyApp::TestOnly::Mock::AuthUser::_id    = $conf{id};
+    $MyApp::TestOnly::Mock::AuthUser::_id    = $conf{user_id};
     @MyApp::TestOnly::Mock::AuthUser::_roles = @{ $conf{roles} };
 }
 
@@ -92,7 +92,19 @@ sub rest_post {
     my $name = $conf{name} || "POST $url";
     my $stashkey = exists $conf{stash} ? $conf{stash} : undef;
 
-    my $req = POST $url, $data;
+    my $req;
+
+    if ( !exists $conf{files} ) {
+        $req = POST $url, $data;
+    }
+    else {
+
+        $conf{files}{$_} = [ $conf{files}{$_} ] for keys %{ $conf{files} };
+
+        $req = POST $url,
+          'Content-Type' => 'form-data',
+          Content        => [ @$data, %{ $conf{files} } ];
+    }
 
     $req->method( $conf{method} ) if exists $conf{method};
 
@@ -158,6 +170,10 @@ sub rest_post {
     return $obj;
 }
 
+sub dumpstash {
+    eval('use Data::Printer; p $stash;');
+}
+
 sub rest_reload {
     my ( $stashkey, $exp_code ) = @_;
 
@@ -197,14 +213,13 @@ sub rest_reload {
     return $res;
 }
 
-
 sub rest_get {
     my ( $url, $exp_code, $params ) = @_;
 
     $params ||= {};
 
-    my $uri = URI->new( $url );
-    $uri->query_form( %$params );
+    my $uri = URI->new($url);
+    $uri->query_form(%$params);
     $url = $uri->as_string;
 
     $exp_code ||= 200;
