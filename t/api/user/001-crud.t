@@ -24,6 +24,7 @@ db_transaction {
 
         is( $me->{id},    stash 'user.id',  'get has the same id!' );
         is( $me->{email}, 'foo1@email.com', 'email ok!' );
+        is( $me->{type}, 'user', 'type is correct !' );
     };
 
     stash_test 'user.list', sub {

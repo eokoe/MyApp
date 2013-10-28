@@ -36,7 +36,7 @@ sub result_GET {
         entity => {
             roles => [ map { $_->name } $user->roles ],
 
-            map { $_ => $attrs{$_}, } qw(id name email)
+            map { $_ => $attrs{$_}, } qw(id name email type)
         }
     );
 }
@@ -81,7 +81,7 @@ sub list_GET {
                 map {
                     my $r = $_;
                     +{
-                        ( map { $_ => $r->{$_} } qw/id name email/ ),
+                        ( map { $_ => $r->{$_} } qw/id name email type/ ),
 
                         roles => [ map { $r->{role}{name} } @{ $r->{user_roles} } ],
 

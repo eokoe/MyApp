@@ -78,6 +78,12 @@ sub action_specs {
 
             my $role = delete $values{role};
 
+            my $types = {
+                'user' => 'user',
+                'superadmin' => 'superadmin'
+            };
+            $values{type} = $role && exists $types->{$role} ? $types->{$role} : 'unknown';
+
             my $user = $self->create( \%values );
             if ($role) {
                 $user->set_roles( { name => $role } );

@@ -77,6 +77,12 @@ __PACKAGE__->table("user");
   data_type: 'text'
   is_nullable: 0
 
+=head2 type
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 12
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -102,6 +108,8 @@ __PACKAGE__->add_columns(
   },
   "password",
   { data_type => "text", is_nullable => 0 },
+  "type",
+  { data_type => "varchar", is_nullable => 1, size => 12 },
 );
 
 =head1 PRIMARY KEY
@@ -163,8 +171,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-07-24 18:04:13
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4EJ7CdzbsHbEjiGBzJpL0w
+# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-28 10:35:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hQwJLiWhFKujOi7tLqDAlQ
 
 __PACKAGE__->many_to_many( roles => user_roles => 'role' );
 
