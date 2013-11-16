@@ -86,6 +86,7 @@ sub rest_post {
     my $url  = shift;
     my $data = pop;
     my %conf = @_;
+    $url = join '/', @$url if ref $url eq 'ARRAY';
 
     $conf{code} ||= exists $conf{is_fail} ? 400 : 201;
 
@@ -215,6 +216,8 @@ sub rest_reload {
 
 sub rest_get {
     my ( $url, $exp_code, $params ) = @_;
+
+    $url = join '/', @$url if ref $url eq 'ARRAY';
 
     $params ||= {};
 
