@@ -1,7 +1,7 @@
-package MyApp::TraitFor::Controller::FuzzySearch;
+package MyApp::TraitFor::Controller::FullText;
 
 use Moose::Role;
-use MyApp::FuzzyText;
+use MyApp::MyApp::FullTextWords;
 
 sub BUILD {
     my ($self) = @_;
@@ -22,12 +22,12 @@ around list_GET => sub {
 
     my ($c) = @_;
 
-    #print "      FuzzySearch::around list_GET \n";
+    #print "      FullText::around list_GET \n";
 
-    if ( exists $c->req->params->{fuzzy_search} && $c->req->params->{fuzzy_search} ) {
+    if ( exists $c->req->params->{full_text_words} && $c->req->params->{full_text_words} ) {
         my $limit = exists $c->req->params->{max_rows} ? $c->req->params->{max_rows} : 25;
 
-        my ( $tswords, $methaf ) = MyApp::FuzzyText->simplify( $c->req->params->{fuzzy_search}, 1 );
+        my ( $tswords, $methaf ) = MyApp::MyApp::FullTextWords->simplify( $c->req->params->{full_text_words}, 1 );
 
         $_ =~ s/[^A-Z0-9]//gio for @$tswords;
         $_ =~ s/[^A-Z]//go     for @$methaf;
@@ -43,7 +43,7 @@ around list_GET => sub {
             my $query_qt = "'$tsquery'::tsquery";
             $c->stash->{collection} = $c->stash->{collection}->search(
                 {
-                    'me.fuzzy_search' => \" \@\@ $query_qt"
+                    'me.full_text_words' => \" \@\@ $query_qt"
                 },
                 {
                     order_by => \"ts_rank_cd( to_tsvector(me.name), $query_qt, 32) DESC",
@@ -55,7 +55,7 @@ around list_GET => sub {
         else {
             $c->stash->{collection} = $c->stash->{collection}->search(
                 {
-                    'me.name' => $c->req->params->{fuzzy_search}
+                    'me.name' => $c->req->params->{full_text_words}
                 },
                 {
                     rows => $limit

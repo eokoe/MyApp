@@ -1,7 +1,6 @@
 package MyApp::TraitFor::Controller::ListAutocomplete;
 
 use Moose::Role;
-use MyApp::FuzzyText;
 
 after list_GET => sub {
     my $self = shift;
@@ -15,7 +14,6 @@ after list_GET => sub {
 
             my $rest = {
                 suggestions => [
-
                     # ex: { value => 'foobar', data => { }  }
                 ]
             };

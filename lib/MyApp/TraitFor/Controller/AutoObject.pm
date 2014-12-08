@@ -22,4 +22,3 @@ around object => sub {
 };
 
 1;
-

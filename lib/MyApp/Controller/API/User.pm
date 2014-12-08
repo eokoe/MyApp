@@ -2,7 +2,7 @@ package MyApp::Controller::API::User;
 
 use Moose;
 
-BEGIN { extends 'Catalyst::Controller::REST' }
+BEGIN { extends 'MyApp::TraitFor::Controller::REST' }
 
 __PACKAGE__->config(
     default => 'application/json',
@@ -10,103 +10,68 @@ __PACKAGE__->config(
     result      => 'DB::User',
     result_cond => { active => 1 },
 
-    # result_attr => { prefetch => '', ... },
     object_key => 'user',
+    list_key   => 'users',
 
     update_roles => [qw/superadmin/],
     create_roles => [qw/superadmin/],
     delete_roles => [qw/superadmin/],
 
+    build_row => sub {
+        my ( $r, $self, $c ) = @_;
+
+        return {
+            (
+                map { $_ => $r->$_ }
+                  qw(
+                  id name email type
+                  )
+            ),
+
+        };
+    },
+
+    before_delete => sub {
+        my ( $self, $c, $item ) = @_;
+
+        $item->update({ active => 0 });
+
+        return 0;
+    },
+
+    search_ok => {
+
+    }
 );
-with 'MyApp::TraitFor::Controller::DefaultCRUD';
+with 'MyApp::TraitFor::Controller::SimpleCRUD';
 
 sub base : Chained('/api/base') : PathPart('users') : CaptureArgs(0) { }
+
+after 'base' => sub {
+    my ( $self, $c ) = @_;
+
+    $c->stash->{collection} = $c->stash->{collection}->search(
+        {
+            'me.id' => $c->user->id
+        }
+    ) if $c->check_any_user_role('user');
+
+};
 
 sub object : Chained('base') : PathPart('') : CaptureArgs(1) { }
 
 sub result : Chained('object') : PathPart('') : Args(0) : ActionClass('REST') { }
 
-sub result_GET {
-    my ( $self, $c ) = @_;
+sub result_GET { }
 
-    my $user  = $c->stash->{user};
-    my %attrs = $user->get_inflated_columns;
-    $self->status_ok(
-        $c,
-        entity => {
-            roles => [ map { $_->name } $user->roles ],
+sub result_PUT { }
 
-            map { $_ => $attrs{$_}, } qw(id name email type)
-        }
-    );
-}
+sub result_DELETE { }
 
-sub result_PUT {
-    my ( $self, $c ) = @_;
+sub list : Chained('base') : PathPart('') : Args(0) : ActionClass('REST') { }
 
-    my $user = $c->stash->{user};
+sub list_GET { }
 
-    $user->execute( $c, for => 'update', with => $c->req->params );
-
-    $self->status_accepted(
-        $c,
-        location => $c->uri_for( $self->action_for('result'), [ $user->id ] )->as_string,
-        entity => { name => $user->name, id => $user->id }
-      ),
-      $c->detach
-      if $user;
-}
-
-sub result_DELETE {
-    my ( $self, $c ) = @_;
-    my $user = $c->stash->{user};
-    $self->status_gone( $c, message => 'deleted' ), $c->detach
-      unless $user->active;
-
-    $user->update( { active => 0 } );
-
-    $self->status_no_content($c);
-}
-
-sub list : Chained('base') : PathPart('') : Args(0) : ActionClass('REST') {
-}
-
-sub list_GET {
-    my ( $self, $c ) = @_;
-
-    $self->status_ok(
-        $c,
-        entity => {
-            users => [
-                map {
-                    my $r = $_;
-                    +{
-                        ( map { $_ => $r->{$_} } qw/id name email type/ ),
-
-                        roles => [ map { $r->{role}{name} } @{ $r->{user_roles} } ],
-
-                        url => $c->uri_for_action( $self->action_for('result'), [ $r->{id} ] )->as_string
-                      }
-                  } $c->stash->{collection}->search( undef, { prefetch => [ { user_roles => 'role' } ] } )
-                  ->as_hashref->all
-            ]
-        }
-    );
-}
-
-sub list_POST {
-    my ( $self, $c ) = @_;
-
-    my $user = $c->stash->{collection}->execute( $c, for => 'create', with => $c->req->params );
-
-    $self->status_created(
-        $c,
-        location => $c->uri_for( $self->action_for('result'), [ $user->id ] )->as_string,
-        entity => {
-            id => $user->id
-        }
-    );
-
-}
+sub list_POST { }
 
 1;

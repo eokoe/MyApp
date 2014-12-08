@@ -1,4 +1,4 @@
-package MyApp::TraitFor::Controller::DefaultCRUD;
+package MyApp::TraitFor::Controller::AssignCollection;
 
 use Moose::Role;
 

@@ -16,7 +16,6 @@ around list_GET => sub {
 
     my @rows;
     while ( my $r = $c->stash->{collection}->next ) {
-
         push @rows, $func->($r);
     }
     $self->status_ok(
@@ -25,6 +24,7 @@ around list_GET => sub {
             $nameret => \@rows
         }
     );
+
     $self->$orig(@_);
 };
 
