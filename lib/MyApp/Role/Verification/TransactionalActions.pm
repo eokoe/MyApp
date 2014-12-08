@@ -12,7 +12,7 @@ around action_specs => sub {
     my $actions = $self->$orig(@_);
 
     my $v = Data::Visitor::Callback->new( code => sub { return $self->_wrap_in_transaction( $_[1] ) } );
-    $v->visit($actions);
+    $actions = $v->visit($actions);
     return $actions;
 
 };
