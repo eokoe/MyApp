@@ -2,7 +2,7 @@ package MyApp::Controller::API::User;
 
 use Moose;
 
-BEGIN { extends 'MyApp::TraitFor::Controller::REST' }
+BEGIN { extends 'CatalystX::Eta::Controller::REST' }
 
 __PACKAGE__->config(
     default => 'application/json',
@@ -43,7 +43,7 @@ __PACKAGE__->config(
 
     }
 );
-with 'MyApp::TraitFor::Controller::SimpleCRUD';
+with 'CatalystX::Eta::Controller::SimpleCRUD';
 
 sub base : Chained('/api/base') : PathPart('users') : CaptureArgs(0) { }
 
