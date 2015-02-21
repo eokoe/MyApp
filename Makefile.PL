@@ -23,6 +23,7 @@ requires 'Log::Log4perl';
 requires 'Catalyst::Authentication::Store::DBIx::Class';
 requires 'Catalyst::Component::InstancePerContext';
 
+requires 'CatalystX::Eta' => 0.01;
 
 requires 'Catalyst::Controller::REST';
 

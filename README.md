@@ -29,17 +29,12 @@ How to test this app:
 
     open myapp_local.conf and configure <connect_info> and <testing_connect_info>
 
-    $ prove -I ../catalystX-eta/lib/ -lvr t/
+    $ prove -lvr t/
 
-    or faster:
+    or faster, if you have `forkprove` installed:
 
-    $ forkprove -I ../catalystX-eta/lib/ -lvr -j8 -MMyApp t/
+    $ forkprove -lvr -j 8 -MMyApp t/
 
-If you have `forkprove` installed:
-
-    forkprove -I ../catalystX-eta/lib/ -MMyApp -j8 -lvr t/
-
-    # you may want change -j8 to something else!
 
 To tidy all code:
 
