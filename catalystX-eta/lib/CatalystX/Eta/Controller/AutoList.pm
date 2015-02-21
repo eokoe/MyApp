@@ -33,13 +33,17 @@ around list_POST => sub {
     my $self = shift;
     my ($c)  = @_;
 
-    my $something = $c->stash->{collection}->execute(
+    my $data_from = $self->config->{data_from_body} ? 'data' : 'params';
+
+    $self->status_bad_request( $c, message => 'missing data' ), $c->detach unless ref $c->req->$data_from eq 'HASH';
+
+    my $something = $c->model( $self->config->{result} )->execute(
         $c,
         for  => 'create',
         with => {
-            %{ $c->req->params },
-            created_by => $c->user->id
-
+            %{ $c->req->$data_from },
+            created_by => $c->user->id,
+            user_id    => $c->user->id,
         }
     );
 

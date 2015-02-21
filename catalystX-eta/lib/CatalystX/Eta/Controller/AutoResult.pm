@@ -28,10 +28,11 @@ around result_PUT => sub {
 
     my $something = $c->stash->{ $self->config->{object_key} };
 
+    my $data_from = $self->config->{data_from_body} ? 'data' : 'params';
     $something->execute(
         $c,
         for => ( exists $c->stash->{result_put_for} ? $c->stash->{result_put_for} : 'update' ),
-        with => $c->req->params,
+        with => $c->req->$data_from,
     );
 
     $self->status_accepted(

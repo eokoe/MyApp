@@ -22,6 +22,7 @@ Returns:
 ]
 
 =cut
+
 sub params_as_array {
     my ( $self, $splt, $c_req_params ) = @_;
 

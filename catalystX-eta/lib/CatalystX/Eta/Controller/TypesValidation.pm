@@ -1,7 +1,8 @@
-package EtaMu::TraitFor::Controller::TypesValidation;
+package CatalystX::Eta::Controller::TypesValidation;
 
 use Moose::Role;
 use Moose::Util::TypeConstraints;
+use JSON::XS;
 
 sub validate_request_params {
     my $self = shift;
@@ -17,7 +18,8 @@ sub validate_request_params {
         $val = '' if !defined $val && $me->{clean_undef};
 
         if ( !defined $val && $me->{required} && !( $me->{undef_is_valid} && !defined $val ) ) {
-            $self->status_bad_request( $c, message => "required param $key" );
+            $c->stash->{rest} = { error => 'form_error', form_error => { $key => 'missing' } };
+            $c->res->code(400);
             $c->detach;
         }
 
@@ -31,7 +33,8 @@ sub validate_request_params {
                 || ref $type eq 'MooseX::Types::TypeDecorator' )
           ) {
 
-            $self->status_bad_request( $c, message => "invalid empty param $key" );
+            $c->stash->{rest} = { error => 'form_error', form_error => { $key => 'empty_is_invalid' } };
+            $c->res->code(400);
             $c->detach;
         }
 
@@ -43,7 +46,8 @@ sub validate_request_params {
           unless defined($cons);
 
         if ( !$cons->check($val) ) {
-            $self->status_bad_request( $c, message => "invalid param $key" );
+            $c->stash->{rest} = { error => 'form_error', form_error => { $key => 'invalid' } };
+            $c->res->code(400);
             $c->detach;
         }
 

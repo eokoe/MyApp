@@ -14,6 +14,7 @@ after list_GET => sub {
 
             my $rest = {
                 suggestions => [
+
                     # ex: { value => 'foobar', data => { }  }
                 ]
             };
