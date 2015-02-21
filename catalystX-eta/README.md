@@ -17,7 +17,7 @@ In order to extends `CatalystX::Eta::Controller::AutoObject` you need need `/err
 
 All your controllers should extends `CatalystX::Eta::Controller::REST`.
 
-`EtaMu::TraitFor::Controller::TypesValidation` add validate_request_params use `Moose::Util::TypeConstraints::find_or_parse_type_constraint` so you can do things like:
+`MyApp::TraitFor::Controller::TypesValidation` add validate_request_params use `Moose::Util::TypeConstraints::find_or_parse_type_constraint` so you can do things like:
 
         $self->validate_request_params(
             $c,
