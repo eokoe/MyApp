@@ -34,7 +34,7 @@ db_transaction {
 
     stash_test 'user2', sub {
         my ($me) = @_;
-        like( $me->{error}, qr/"email":"invalid"/, 'email invalido' );
+        check_invalid_error 'user2', 'email', 'invalid';
     };
 
 
@@ -78,7 +78,7 @@ db_transaction {
 
     stash_test 'user2', sub {
         my ($me) = @_;
-        like( $me->{error}, qr/"email":"invalid"/, 'email invalido' );
+        check_invalid_error 'user2', 'email', 'invalid';
     };
 
 };

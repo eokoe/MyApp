@@ -9,7 +9,7 @@ use MyApp::Test::Further;
 
 db_transaction {
 
-    my $res = rest_get '/users', 403;
+    my $res = rest_get '/users', code => 403, is_fail => 1;
     is($res->{error}, 'access denied','access denied');
 
     rest_post '/login',
@@ -44,7 +44,7 @@ db_transaction {
 
         is_deeply($me->{roles}, ['superadmin','admin'], 'roles looks good');
 
-        my $users = rest_get '/users', 200, {api_key => $me->{api_key}};
+        my $users = rest_get '/users', 200, params => [api_key => $me->{api_key}];
 
         is (@{$users->{users}}, 2, 'have 2 users');
 

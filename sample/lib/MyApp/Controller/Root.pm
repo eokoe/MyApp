@@ -2,7 +2,8 @@ package MyApp::Controller::Root;
 use Moose;
 use namespace::autoclean;
 
-BEGIN { extends 'Catalyst::Controller' }
+BEGIN { extends 'Catalyst::Controller::REST'; }
+__PACKAGE__->config( default => 'application/json', );
 use utf8;
 use JSON::XS;
 
@@ -12,26 +13,12 @@ use JSON::XS;
 #
 __PACKAGE__->config( namespace => '' );
 
-=head1 NAME
-
-MyApp::Controller::Root - Root Controller for MyApp
-
-=head1 DESCRIPTION
-
-[enter your description here]
-
-=head1 METHODS
-
-=head2 index
-
-The root page (/)
-
-=cut
-
 sub index : Path : Args(0) {
     my ( $self, $c ) = @_;
 
-    $c->response->body('Perl is awesome!');
+    $c->stash->{rest} = { Perl => 'awesome!' };
+
+    $c->response->status(200);
 }
 
 sub root : Chained('/') PathPart('') CaptureArgs(0) {
@@ -40,7 +27,8 @@ sub root : Chained('/') PathPart('') CaptureArgs(0) {
 
 sub default : Path {
     my ( $self, $c ) = @_;
-    $c->response->body('Page not found');
+
+    $self->status_bad_request( $c, message => 'Endpoint not found!' );
     $c->response->status(404);
 }
 
@@ -48,40 +36,20 @@ sub error_404 : Private {
     my ( $self, $c, $foo ) = @_;
     my $x = $c->req->uri;
 
-    $c->response->body( $x->path . ' Page not found: ' . ( $foo || '' ) );
+    $self->status_bad_request( $c,
+        message => 'You requested something that does not exists or you do not have permissions for so.' );
 
     $c->response->status(404);
-
 }
 
 sub error_500 : Private {
     my ( $self, $c, $arg ) = @_;
-    $c->response->body( $arg || 'error' );
+
+    $self->status_bad_request( $c, $arg || 'error' );
+
     $c->response->status(500);
 
 }
-
-=head2 end
-
-Attempt to render a view, if needed.
-
-=cut
-
-sub end : ActionClass('RenderView') {
-    my ( $self, $c ) = @_;
-
-}
-
-=head1 AUTHOR
-
-Renato CRON
-
-=head1 LICENSE
-
-This library is free software. You can redistribute it and/or modify
-it under the same terms as Perl itself.
-
-=cut
 
 __PACKAGE__->meta->make_immutable;
 

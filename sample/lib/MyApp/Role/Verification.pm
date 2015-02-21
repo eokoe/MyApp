@@ -5,7 +5,6 @@ use Moose::Role;
 use MyApp::Data::Manager;
 use Data::Diver qw(Dive);
 
-use JSON qw(encode_json);
 has verifiers => (
     is         => 'ro',
     isa        => 'HashRef',
@@ -45,8 +44,11 @@ sub execute {
     my $dm     = $self->check(%args);
     my $result = $dm->apply;
 
-    $c->controller('API')->status_bad_request( $c, message => encode_json( $dm->errors ) ), $c->detach
-      unless $dm->success;
+    unless ( $dm->success ) {
+        $c->stash->{rest} = { form_error => $dm->errors, error => 'form_error' };
+        $c->res->code(400);
+        $c->detach();
+    }
 
     return wantarray ? ( $dm, $result ) : $result;
 }

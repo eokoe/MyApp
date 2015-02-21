@@ -10,21 +10,30 @@ How to test this app:
 
     $ cpanm --installdeps .
 
-    $ createdb youapp_dev
+    $ createdb myapp_tesing
 
-    Open the file sqitch.conf and configure it to look like the below:
+    Open the file sqitch.conf and configure the target database:
 
-    [core "pg"]
-        # client = psql
-        username = postgres
-        password = in-postgres-we-trust
-        db_name =  youapp_dev
-        host = 127.0.0.1
+    [target "local"]
+    uri = db:pg://postgres:in-postgres-we-trust@127.0.0.1:5432/myapp_dev
 
+    [target "local2"]
+    uri = db:pg://postgres:in-postgres-we-trust@127.0.0.1:5432/myapp_tesing
 
-    $ sqitch deploy
+    [target "prod"]
+    uri = db:pg://postgres:in-postgres-we-trust@127.0.0.1:5432/myapp_prod
+
+    $ sqitch deploy -t local2
+
+    $ cp myapp.conf myapp_local.conf
+
+    open myapp_local.conf and configure <connect_info> and <testing_connect_info>
 
     $ prove -I ../catalystX-eta/lib/ -lvr t/
+
+    or faster:
+
+    $ forkprove -I ../catalystX-eta/lib/ -lvr -j8 -MMyApp t/
 
 If you have `forkprove` installed:
 

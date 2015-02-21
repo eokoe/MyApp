@@ -2,7 +2,7 @@ package MyApp;
 use Moose;
 use namespace::autoclean;
 
-use Catalyst::Runtime 5.90042;
+use Catalyst::Runtime 5.90080;
 use open qw(:std :utf8);
 
 # Set flags and add plugins for the application.
@@ -49,6 +49,15 @@ __PACKAGE__->config(
 
 );
 
+before 'setup_components' => sub {
+    my $app = shift;
+
+    if ( $ENV{HARNESS_ACTIVE} || $0 =~ /forkprove/ ) {
+        $app->config->{'Model::DB'}{connect_info} = $app->config->{'Model::DB'}{testing_connect_info};
+    }
+};
+
+
 after 'setup_components' => sub {
     my $app = shift;
     for ( keys %{ $app->components } ) {
@@ -68,6 +77,19 @@ after setup_finalize => sub {
         }
     }
 };
+
+use Log::Log4perl qw(:easy);
+
+Log::Log4perl->easy_init(
+    {
+        level  => $DEBUG,
+        layout => '[%P] %d %m%n',
+        ( $ENV{ERROR_LOG} && -e $ENV{ERROR_LOG} ? ( file => '>>' . $ENV{ERROR_LOG} ) : () ),
+        'utf8' => 1
+    }
+);
+
+__PACKAGE__->log( get_logger() );
 
 # Start the application
 __PACKAGE__->setup();

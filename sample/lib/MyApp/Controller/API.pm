@@ -7,26 +7,34 @@ use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::REST'; }
 __PACKAGE__->config( default => 'application/json', );
 
-use Digest::SHA1 qw(sha1_hex);
+use Crypt::PRNG qw/random_bytes_hex/;
+
 use Time::HiRes qw(time);
 
 sub api_key_check : Private {
     my ( $self, $c ) = @_;
 
-    my $api_key = $c->req->param('api_key')
+    my $without_user_is_fine = $c->stash->{without_user_is_fine};
+
+    my $api_key =
+         $c->req->param('api_key')
+      || ( $c->req->headers->header('x-api-key') )
       || ( $c->req->data ? $c->req->data->{api_key} : undef );
 
-    unless ( ref $c->user eq 'MyApp::TestOnly::Mock::AuthUser' ) {
+    unless ($without_user_is_fine) {
         $self->status_forbidden( $c, message => "access denied" ), $c->detach
-          unless defined $api_key;
+          unless $api_key;
+    }
 
+    if ($api_key) {
         my $user_session = $c->model('DB::UserSession')->search(
             {
-                api_key      => $api_key,
-                valid_until  => { '>=' => \'now()' },
-                valid_for_ip => $c->req->address
+                api_key     => $api_key,
+                valid_until => { '>=' => \'now()' },
+
+                #valid_for_ip => $c->req->address
             }
-        )->first;
+        )->next;
         my $user = $user_session ? $c->find_user( { id => $user_session->user_id } ) : undef;
 
         $self->status_forbidden( $c, message => "access denied", ),
@@ -34,8 +42,8 @@ sub api_key_check : Private {
           $c->detach unless defined $api_key && $user;
 
         $c->set_authenticated($user);
-
     }
+
 }
 
 sub root : Chained('/') : PathPart('') : CaptureArgs(0) {
@@ -54,7 +62,7 @@ sub login_POST {
     if ( $c->authenticate( $c->req->params ) ) {
         my $item = $c->user->sessions->create(
             {
-                api_key      => sha1_hex( rand(time) ),
+                api_key      => random_bytes_hex(22),
                 valid_for_ip => $c->req->address
             }
         );

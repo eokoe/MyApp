@@ -4,7 +4,7 @@ use lib "$Bin/../../lib";
 
 use MyApp::Test::Further;
 
-api_auth_as user_id => 1, roles => ['superadmin'];
+api_auth_as user_id => 1;
 
 db_transaction {
 
@@ -58,7 +58,7 @@ db_transaction {
 
     rest_delete stash 'user.url';
 
-    rest_reload 'user', 404;
+    rest_reload 'user', code => 404;
 
     # ao inves de
     # my $list = rest_get '/users';
