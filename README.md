@@ -1,37 +1,47 @@
-# WTF CatalystX::Eta is and why did you do that
 
-I started (although not with this name) as set of Catalyst Controller Roles to extend and reduce repeatable tasks I had to do to make REST/CRUD stuff.
+This is sample app using `CatalystX::Eta::` Roles as CRUD.
 
-More later, I had to start many Catalyst projects. Then, I started teaching others collaborators how to use it on their projects.
-After a while, they made some modifications on they ::Roles project, but does not pass all ::Roles. So, I'm using this namespace to group and keep those changes together.
+Deps with binary deps:
 
-This module may not fit for you, but it's a very simple way to make CRUD schemas on REST, without prohibit or complicate use of catalyst power, like chains or anything else.
+    DBD::Pg         - PostgreSQL
+    App::Sqitch
 
-# Depends on...
+How to test this app:
 
-In order to extends `CatalystX::Eta::Controller::AutoObject` you need need `/error_404`  Catalyst Private action defined.
+    $ cpanm --installdeps .
 
-`CatalystX::Eta::Controller::SimpleCRUD` and  `CatalystX::Eta::Controller::AssignCollection` extends `CEC::AutoObject`, so you will need in a way, or in another.
+    $ createdb myapp_tesing
 
-`CatalystX::Eta::Controller::REST` extends `Catalyst::Controller::REST` and make errors from `DBIx::Class::Exception` more 'api friendly' than HTML with '(en) Please come back later\n...'
+    Open the file sqitch.conf and configure the target database:
 
-All your controllers should extends `CatalystX::Eta::Controller::REST`.
+    [target "local"]
+    uri = db:pg://postgres:in-postgres-we-trust@127.0.0.1:5432/myapp_dev
 
-`MyApp::TraitFor::Controller::TypesValidation` add validate_request_params use `Moose::Util::TypeConstraints::find_or_parse_type_constraint` so you can do things like:
+    [target "local2"]
+    uri = db:pg://postgres:in-postgres-we-trust@127.0.0.1:5432/myapp_tesing
 
-        $self->validate_request_params(
-            $c,
-            extra_days => {
-                type     => 'Int',
-                required => 0,
-            },
-            credit_card_id => {
-                type     => 'Int',
-                required => 0,
-            },
-        );
+    [target "prod"]
+    uri = db:pg://postgres:in-postgres-we-trust@127.0.0.1:5432/myapp_prod
 
-on your controllers, and it does the $c->status_bad_request or $c->detach for you.
+    $ sqitch deploy -t local2
 
-More docs comming later!
+    $ cp myapp.conf myapp_local.conf
+
+    open myapp_local.conf and configure <connect_info> and <testing_connect_info>
+
+    $ prove -I ../catalystX-eta/lib/ -lvr t/
+
+    or faster:
+
+    $ forkprove -I ../catalystX-eta/lib/ -lvr -j8 -MMyApp t/
+
+If you have `forkprove` installed:
+
+    forkprove -I ../catalystX-eta/lib/ -MMyApp -j8 -lvr t/
+
+    # you may want change -j8 to something else!
+
+To tidy all code:
+
+    tidyall -a
 
