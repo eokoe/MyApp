@@ -14,7 +14,7 @@ __PACKAGE__->config(
     list_key   => 'users',
 
     update_roles => [qw/superadmin/],
-    create_roles => [qw/superadmin/],
+    create_roles => [qw/superadmin web_api/],
     delete_roles => [qw/superadmin/],
 
     build_row => sub {

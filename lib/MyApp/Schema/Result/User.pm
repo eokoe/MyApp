@@ -77,11 +77,35 @@ __PACKAGE__->table("user");
   data_type: 'text'
   is_nullable: 0
 
+=head2 created_by
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 1
+
 =head2 type
 
   data_type: 'varchar'
   is_nullable: 1
   size: 12
+
+=head2 fb_clientid
+
+  data_type: 'text'
+  is_nullable: 1
+  original: {data_type => "varchar"}
+
+=head2 fb_short_lived_access_token
+
+  data_type: 'text'
+  is_nullable: 1
+  original: {data_type => "varchar"}
+
+=head2 fb_long_lived_access_token
+
+  data_type: 'text'
+  is_nullable: 1
+  original: {data_type => "varchar"}
 
 =cut
 
@@ -108,8 +132,28 @@ __PACKAGE__->add_columns(
   },
   "password",
   { data_type => "text", is_nullable => 0 },
+  "created_by",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
   "type",
   { data_type => "varchar", is_nullable => 1, size => 12 },
+  "fb_clientid",
+  {
+    data_type   => "text",
+    is_nullable => 1,
+    original    => { data_type => "varchar" },
+  },
+  "fb_short_lived_access_token",
+  {
+    data_type   => "text",
+    is_nullable => 1,
+    original    => { data_type => "varchar" },
+  },
+  "fb_long_lived_access_token",
+  {
+    data_type   => "text",
+    is_nullable => 1,
+    original    => { data_type => "varchar" },
+  },
 );
 
 =head1 PRIMARY KEY
@@ -139,6 +183,26 @@ __PACKAGE__->set_primary_key("id");
 __PACKAGE__->add_unique_constraint("user_email_key", ["email"]);
 
 =head1 RELATIONS
+
+=head2 created_by
+
+Type: belongs_to
+
+Related object: L<MyApp::Schema::Result::User>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "created_by",
+  "MyApp::Schema::Result::User",
+  { id => "created_by" },
+  {
+    is_deferrable => 0,
+    join_type     => "LEFT",
+    on_delete     => "NO ACTION",
+    on_update     => "NO ACTION",
+  },
+);
 
 =head2 user_roles
 
@@ -170,9 +234,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 users
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-28 10:35:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hQwJLiWhFKujOi7tLqDAlQ
+Type: has_many
+
+Related object: L<MyApp::Schema::Result::User>
+
+=cut
+
+__PACKAGE__->has_many(
+  "users",
+  "MyApp::Schema::Result::User",
+  { "foreign.created_by" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07042 @ 2015-02-22 01:56:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DgpP3dPooxx+Oa5YS1LMfw
 
 __PACKAGE__->many_to_many( roles => user_roles => 'role' );
 

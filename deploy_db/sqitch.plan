@@ -1,5 +1,7 @@
-%syntax-version=1.0.0-b2
+%syntax-version=1.0.0
 %project=myapp
 %uri=https://github.com/AwareTI/MyApp
 
 appschema 2013-09-18T16:45:46Z cron <renato.cron@gmail.com> # schema tables, types and views
+0001-new-role 2015-02-22T04:51:39Z cron <renato.cron@gmail.com> # role for web2api
+0002-facebook-auth [0001-new-role] 2015-02-22T04:53:48Z cron <renato.cron@gmail.com> # facebook auth

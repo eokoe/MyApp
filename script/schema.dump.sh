@@ -4,7 +4,7 @@ if [ -d "script" ]; then
   cd script;
 fi
 
-perl myapp_create.pl model DB DBIC::Schema MyApp::Schema create=static components=TimeStamp,PassphraseColumn 'dbi:Pg:dbname=youapp_dev;host=localhost' postgres system quote_names=1 overwrite_modifications=1
+perl myapp_create.pl model DB DBIC::Schema MyApp::Schema create=static components=TimeStamp,PassphraseColumn 'dbi:Pg:dbname=myapp_dev;host=localhost' postgres system quote_names=1 overwrite_modifications=1
 
 cd ..;
 
