@@ -19,11 +19,12 @@ requires 'Catalyst::Plugin::Authentication';
 requires 'Catalyst::Plugin::Authorization::Roles';
 
 requires 'Log::Log4perl';
+requires 'Facebook::OpenGraph';
 
 requires 'Catalyst::Authentication::Store::DBIx::Class';
 requires 'Catalyst::Component::InstancePerContext';
 
-requires 'CatalystX::Eta' => 0.01;
+requires 'CatalystX::Eta' => 0.02;
 
 requires 'Catalyst::Controller::REST';
 
