@@ -24,7 +24,7 @@ sub verifiers_specs {
                 },
 
                 password => {
-                    required => 1,
+                    required => 0,
                     type     => 'Str',
                 },
 
@@ -43,6 +43,23 @@ sub verifiers_specs {
                       }
                 },
 
+
+                is_facebook => {
+                    required => 0,
+                    type     => 'Bool',
+                },
+                fb_clientid => {
+                    required => 0,
+                    type     => 'Int',
+                },
+                fb_short_lived_access_token => {
+                    required => 0,
+                    type     => 'Str',
+                },
+                fb_fields => {
+                    required => 0,
+                    type     => 'Str',
+                },
             },
         ),
 
@@ -75,8 +92,16 @@ sub action_specs {
         create => sub {
             my %values = shift->valid_values;
             delete $values{password_confirm};
+            my $is_facebook = delete $values{is_facebook};
+
+            my $password = delete $values{password};
+
+            die \['password', 'missing']
+                if !$password && !$is_facebook;
 
             my $role = delete $values{role};
+
+            $values{password} = $password ? $password : 'empty';
 
             my $types = {
                 'user' => 'user',
@@ -84,7 +109,10 @@ sub action_specs {
             };
             $values{type} = $role && exists $types->{$role} ? $types->{$role} : 'unknown';
 
-            my $user = $self->create( \%values );
+            my $user = $self->create(
+                \%values
+            );
+
             if ($role) {
                 $user->set_roles( { name => $role } );
             }

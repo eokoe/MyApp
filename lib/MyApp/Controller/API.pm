@@ -7,7 +7,6 @@ use namespace::autoclean;
 BEGIN { extends 'Catalyst::Controller::REST'; }
 __PACKAGE__->config( default => 'application/json', );
 
-use Crypt::PRNG qw/random_bytes_hex/;
 
 use Time::HiRes qw(time);
 
@@ -60,24 +59,7 @@ sub login_POST {
     $c->model('DB::User')->execute( $c, for => 'login', with => $c->req->params );
 
     if ( $c->authenticate( $c->req->params ) ) {
-        my $item = $c->user->sessions->create(
-            {
-                api_key      => random_bytes_hex(22),
-                valid_for_ip => $c->req->address
-            }
-        );
-
-        $c->user->discard_changes;
-
-        my %attrs = $c->user->get_inflated_columns;
-        $attrs{api_key} = $item->api_key;
-
-        $attrs{roles} = [ map { $_->name } $c->model('DB::User')->search( { id => $c->user->id } )->next->roles ];
-
-        delete $attrs{password};
-        $attrs{created_at} = $attrs{created_at}->datetime;
-
-        $self->status_ok( $c, entity => \%attrs );
+        $self->status_ok( $c, entity => $c->user->new_session($c->req->address) );
     }
     else {
 

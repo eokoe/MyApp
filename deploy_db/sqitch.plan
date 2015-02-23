@@ -5,3 +5,4 @@
 appschema 2013-09-18T16:45:46Z cron <renato.cron@gmail.com> # schema tables, types and views
 0001-new-role 2015-02-22T04:51:39Z cron <renato.cron@gmail.com> # role for web2api
 0002-facebook-auth [0001-new-role] 2015-02-22T04:53:48Z cron <renato.cron@gmail.com> # facebook auth
+0003-facebook_data_on_db [0002-facebook-auth] 2015-02-23T16:13:24Z cron <renato.cron@gmail.com># data on db

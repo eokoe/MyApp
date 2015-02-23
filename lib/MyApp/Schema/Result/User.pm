@@ -107,6 +107,12 @@ __PACKAGE__->table("user");
   is_nullable: 1
   original: {data_type => "varchar"}
 
+=head2 fb_fields
+
+  data_type: 'text'
+  is_nullable: 1
+  original: {data_type => "varchar"}
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -149,6 +155,12 @@ __PACKAGE__->add_columns(
     original    => { data_type => "varchar" },
   },
   "fb_long_lived_access_token",
+  {
+    data_type   => "text",
+    is_nullable => 1,
+    original    => { data_type => "varchar" },
+  },
+  "fb_fields",
   {
     data_type   => "text",
     is_nullable => 1,
@@ -250,8 +262,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2015-02-22 01:56:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DgpP3dPooxx+Oa5YS1LMfw
+# Created by DBIx::Class::Schema::Loader v0.07042 @ 2015-02-23 13:14:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZtN18jmwMARFFID0m7Rspg
 
 __PACKAGE__->many_to_many( roles => user_roles => 'role' );
 
@@ -284,7 +296,7 @@ with 'MyApp::Schema::Role::ResultsetFind';
 
 use Data::Verifier;
 use MooseX::Types::Email qw/EmailAddress/;
-
+use JSON::MaybeXS;
 
 
 sub verifiers_specs {
@@ -344,8 +356,53 @@ sub action_specs {
 
     };
 }
+use Crypt::PRNG qw/random_bytes_hex/;
 
+sub new_session {
+    my $self = shift;
+    my $ip   = shift;
+    my $item = $self->sessions->create(
+        {
+            api_key      => random_bytes_hex(22),
+            valid_for_ip => $ip
+        }
+    );
 
+    $self->discard_changes;
+
+    my %attrs = map { $_ => $self->$_ } qw/id name email type/;
+    $attrs{api_key} = $item->api_key;
+    $attrs{roles} = [ map { $_->name } $self->roles ];
+    $attrs{has_password} = $self->has_password;
+    $attrs{created_at} = $self->created_at->datetime;
+
+    return \%attrs;
+}
+
+sub setup_facebook {
+    my ($self, $conf) = @_;
+
+    if ($conf->{short_lived_access_token}){
+        $self->fb_short_lived_access_token($conf->{short_lived_access_token});
+        # todo, push numa fila para gerar o long_lived_access_token
+    }
+
+    $self->fb_clientid($conf->{clientid})
+        if ($conf->{clientid});
+
+    $self->fb_fields(eval{encode_json $conf->{fb_fields}} or "invalid object: $@")
+        if ($conf->{fb_fields});
+
+    $self->update;
+}
+
+sub has_password {
+    shift->password ne 'empty';
+}
+
+sub set_empty_password {
+    shift->password('empty');
+}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
