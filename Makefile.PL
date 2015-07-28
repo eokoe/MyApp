@@ -52,6 +52,9 @@ requires 'Digest::MD5';
 requires 'MooseX::Traits';
 requires 'DBD::Pg';
 
+requires 'App::Sqitch';
+requires 'MooseX::NonMoose';
+requires 'Crypt::PRNG';
 
 requires 'Config::General'; # This should reflect the config file format you've chosen
                  # See Catalyst::Plugin::ConfigLoader for supported formats

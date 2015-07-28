@@ -2,20 +2,29 @@ package MyApp::Types;
 
 use MooseX::Types -declare => [
     qw( DataStr
-      )
+        MobileNumber
+        )
 ];
-use MooseX::Types::Moose qw(ArrayRef HashRef CodeRef Str ScalarRef);
+use MooseX::Types::Moose qw(ArrayRef HashRef Int CodeRef Str ScalarRef);
 use Moose::Util::TypeConstraints;
+use DateTime::Format::Pg;
 
-use DateTimeX::Easy;
-
+#DataStr
 subtype DataStr, as Str, where {
-    eval { DateTimeX::Easy->new($_)->datetime };
+    eval { DateTime::Format::Pg->parse_datetime($_)->datetime };
     return $@ eq '';
-}, message { "$_ data invalida" };
+}, message { "invalid date [$_]" };
 
 coerce DataStr, from Str, via {
-    DateTimeX::Easy->new($_)->datetime;
+    DateTime::Format::Pg->parse_datetime($_)->datetime;
+};
+
+
+#Mobile number
+subtype MobileNumber, as Int, where {
+    return $_ =~ m#(\d{13,14})# ? 1 : 0;
+}, message {
+    "$_ mobile number invalido";
 };
 
 1;
